@@ -188,29 +188,49 @@ Here is the code that solves the stated problem:
 *参数*多态
 -------------------------
 
+<!--
 One important thing to note about polymorphic functions is that **the
 caller gets to pick the types**. When you write a polymorphic function,
 it must work for every possible input type. This – together with the
 fact that Haskell has no way to directly make make decisions based on
 what type something is – has some interesting implications.
+-->
 
+多态函数的一个重要的特点是 **调用者决定类型**。
+当你写一个多态函数时，它应该对所有可能的输入类型都工作。
+这连同事实上 Haskell 无法只根据某表达式类型直接做决定的特点，产生了一些有趣的意味（？）。
+
+<!--
 For starters, the following is very bogus:
+-->
+
+对初学者来说，下面的代码很*假*:
 
     bogus :: [a] -> Bool
     bogus ('X':_) = True
     bogus _       = False
 
+<!--
 It’s bogus because the definition of `bogus` assumes that the input is a
 `[Char]`. The function does not make sense for *any* value of the type
 variable `a`. On the other hand, the following is just fine:
+-->
+
+*假*是因为 `bogus` 的定义实际上假定了输入是 `[Char]`。这个函数并不能对*任意*类型的 a 奏效。
+与之相反，下面的代码没有问题：
 
 > notEmpty :: [a] -> Bool
 > notEmpty (_:_) = True
 > notEmpty []    = False
 
+<!--
 The `notEmpty` function does not care what `a` is. It will always just
 make sense.
+-->
 
+`notEmpty` 函数并不关心 `a` 是什么，就能工作。
+
+<!--
 This “not caring” is what the “parametric” in parametric polymorphism
 means. All Haskell functions must be parametric in their type
 parameters; the functions must not care or make decisions based on the
@@ -218,7 +238,14 @@ choices for these parameters. A function can’t do one thing when `a` is
 `Int` and a different thing when `a` is `Bool`. Haskell simply provides
 no facility for writing such an operation. This property of a langauge
 is called *parametricity*.
+-->
 
+这种“不关心”就是参数多态中“参数化（parametric）”的含义。
+所有的 Haskell 函数实例对于它的类型都必须是参数化的；函数不能介意或者根据这些类型参数做选择（？）。
+函数不能在 `a` 是 `Int` 时做一种事而在 `a` 是 `Bool` 时做另一种事。
+Haskell 不提供这样的操作。这种语言特性叫做 *参态（parametricity）*。
+
+<!--
 There are many deep and profound consequences of parametricity. One
 consequence is something called *type erasure*. Because a running
 Haskell program can never make decisions based on type information, all
@@ -229,94 +256,182 @@ speed boost when compared to other languages, such as Python, that need
 to keep types around at runtime. (Type erasure is not the only thing
 that makes Haskell faster, but Haskell is sometimes clocked at 20x
 faster than Python.)
+-->
 
+参态意味深远。其中之一常被叫做 *类型擦除*。
+因为 Haskell 运行的时候不能再根据类型信息做决定，所以所有的类型信息在编译期间就可以被抛弃掉了。
+不管类型对于 Haskell 代码来说多么重要，他们和运行中的程序都没有关系。
+这个特性给 Haskell 带来了相比其他需要在运行时保留类型信息的语言（比如 Python）巨大的速度提升。
+（类型擦除并不是唯一让 Haskell 更快的方法，但 Haskell 有时候能比 Python 快 20 倍。）
+
+<!--
 Another consequence of parametricity is that it restricts what
 polymorphic functions you can write. Look at this type signature:
+-->
+
+参态的另一个影响是它限制了多态函数的实现。例如如下的类型签名：
 
 > strange :: a -> b
 
+<!--
 The `strange` function takes a value of some type `a` and produces a
 value of another type `b`. But, crucially, it isn’t allowed to care what
 `a` and `b` are! Thus, *there is no way to write `strange`*!
+-->
+
+`strange` 函数获得一个类型是 `a` 的东西产生另一个类型是 `b` 的东西。
+但是关键是它不能关心 `a` 和 `b` 具体是什么。*所以根本没有办法写出这样的 `strange`！*
 
 > strange = error "impossible!"
 
+<!--
 (The function `error`, defined in the `Prelude`, aborts your program
 with a message.)
+-->
 
+（`Prelude` 中定义的 `error` 函数可以终止整个程序并显示指定信息。）
+
+<!--
 What about
+-->
+
+再来看看
 
 > limited :: a -> a
 
+<!--
 That function must produce an `a` when given an `a`. There is only one
 `a` it can produce – the one it got! Thus, there is only one possible
 definition for `limited`:
+-->
+
+这个函数对于给定的 `a` 产生 `a`。只有唯一的 `a` 它能产生，就是它获得的那个！
+所以 `limited` 只可能有一种实现：
 
 > limited x = x
 
+<!--
 In general, given the type of a function, it is possible to figure out
 various properties of the function just by thinking about parametricity.
 The function must have *some* way of producing the output type… but
 where could values of that type come from? By answering this question,
 you can learn a lot about a function.
+-->
 
+总体来说，给定一个函数的类型，只根据参态就可以推断出该函数的很多特性。
+函数可以有*多种*产生输出值的方式……但是给定类型的值从何而来？
+通过试图回答这个问题，可以获得对函数的一些了解。
+
+<!--
 Total and partial functions
+-->
+Total 函数和 partial 函数
 ---------------------------
 
+<!--
 Consider this polymorphic type:
+-->
+考虑下面的多态类型：
 
 ``` {.haskell}
 [a] -> a
 ```
 
+<!--
 What functions could have such a type? The type says that given a list
 of things of type `a`, the function must produce some value of type `a`.
 For example, the Prelude function `head` has this type.
+-->
 
+什么样的函数有这样的类型？这个类型说明了给定一个 `a` 类型的列表，函数必须产生一个类型为 `a` 的值。
+例如 Prelude 里的函数 `head` 既是此类型。
+
+<!--
 It crashes! There’s nothing else it possibly could do, since it must
 work for *all* types. There’s no way to make up an element of an
 arbitrary type out of thin air.
+-->
 
+糟糕！好像除此之外没有别的选择了，因为这个函数必须能对*所有*类型工作。
+没有办法凭空造出来一个任意类型的值。
+
+<!--
 `head` is what is known as a *partial function*: there are certain
 inputs for which `head` will crash. Functions which have certain inputs
 that will make them recurse infinitely are also called partial.
 Functions which are well-defined on all possible inputs are known as
 *total functions*.
+-->
 
+`head` 就是俗称的 *partial 函数*：对于某些输入不能工作。
+函数在某些输入上无限递归也叫做 partial。
+函数在所有可能的输入上都有良好的定义叫做 *total 函数*。
+
+<!--
 It is good Haskell practice to avoid partial functions as much as
 possible. Actually, avoiding partial functions is good practice in *any*
 programming language—but in most of them it’s ridiculously annoying.
 Haskell tends to make it quite easy and sensible.
+-->
 
+好的 Haskell 实践当然是尽量避免 partial 函数。
+避免 partial 函数也是 *任何* 编程语言中的良好实践 —— 但是在大多数语言中极为麻烦。
+而在 Haskell 中往往简单又合理。
+
+<!--
 **`head` is a mistake!** It should not be in the `Prelude`. Other
 partial `Prelude` functions you should almost never use include `tail`,
 `init`, `last`, and `(!!)`. From this point on, using one of these
 functions on a homework assignment will lose style points!
+-->
 
+**`head` 是一个错误！** 它不应该存在 `Prelude` 中。
+其他你应该尽力避免的 Prelude 中的 partial 函数包括 `tail`、`init`、`last` 和 `(!!)`。
+从现在开始在作业中使用其中任意一个函数都会丢掉样式分！
+
+<!--
 What to do instead?
+-->
 
+那应该怎么做？
+
+<!--
 **Replacing partial functions**
+-->
+**替换 partial 函数**
 
+<!--
 Often partial functions like `head`, `tail`, and so on can be replaced
 by pattern-matching. Consider the following two definitions:
+-->
+
+像 `head`、`tail` 等等 partial 函数常常可以被模式匹配取代。比如下面两个定义：
 
 > doStuff1 :: [Int] -> Int
 > doStuff1 []  = 0
 > doStuff1 [_] = 0
-> doStuff1 xs  = head xs + (head (tail xs)) 
+> doStuff1 xs  = head xs + (head (tail xs))
 
 > doStuff2 :: [Int] -> Int
 > doStuff2 []        = 0
 > doStuff2 [_]       = 0
 > doStuff2 (x1:x2:_) = x1 + x2
 
+<!--
 These functions compute exactly the same result, and they are both
 total. But only the second one is *obviously* total, and it is much
 easier to read anyway.
+-->
 
+这两个函数做了同样的事，而且也都是 total 的。但是只有第二个 *显然* 是 total 的，而且更易读。
+
+<!--
 Recursion patterns
+-->
+递归模式
 ------------------
 
+<!--
 What sorts of things might we want to do with an `[a]`? Here are a few
 common possibilities:
 
@@ -329,50 +444,94 @@ common possibilities:
     product, maximum…).
 
 -   You can probably think of others!
+-->
 
+对于 `[a]` 我们可能会做什么？有几种可能：
+
+-   对列表中的每一个元素做某种操作
+
+-   基于某种测试，只保留一些元素，丢掉其他的
+
+-   对所有元素做“总结”（比如求和、求积、最大值）
+
+-   你能想到的其他的！
+
+<!--
 **Map**
+-->
 
+**映射（Map）**
+
+<!--
 Let’s think about the first one (“perform some operation on every
 element of the list”). For example, we could add one to every element in
 a list:
+-->
+
+让我们来考虑第一种情况（对列表中的每一个元素做某种操作）。
+比如我们可以对列表中的每一个元素加一：
 
 > addOneToAll :: [Int] -> [Int]
 > addOneToAll []     = []
 > addOneToAll (x:xs) = x + 1 : addOneToAll xs
 
+<!--
 Or we could ensure that every element in a list is nonnegative by taking
 the absolute value:
+-->
+或者对每一个取绝对值得到一个非负的列表：
 
 > absAll :: [Int] -> [Int]
 > absAll []     = []
 > absAll (x:xs) = abs x : absAll xs
 
+<!--
 Or we could square every element:
+-->
+或者对每一个平方：
 
 > squareAll :: [Int] -> [Int]
 > squareAll []     = []
 > squareAll (x:xs) = x^2 : squareAll xs
 
+<!--
 At this point, big flashing red lights and warning bells should be going
 off in your head. These three functions look way too similar. There
 ought to be some way to abstract out the commonality so we don’t have to
 repeat ourselves!
+-->
 
+现在，你脑中应该有红灯闪烁警报作响了，这几个函数这么相像，
+应该有什么办法把这种共性抽象出来，省去我们的重复工作了。
+
+<!--
 There is indeed a way—can you figure it out? Which parts are the same in
 all three examples and which parts change?
+-->
 
+确实有这么一种办法，你有没有看出来？这三个例子里哪些部分是相同的，哪些部分变化了？
+
+<!--
 The thing that changes, of course, is the operation we want to perform
 on each element of the list. We can specify this operation as a
 *function* of type `a -> a`. Here is where we begin to see how
 incredibly useful it is to be able to pass functions as inputs to other
 functions!
+-->
+
+变化的，当然，是我们相对每个元素做的操作。我们可以把这个操作特化为一个类型为 `a -> a` 的函数。
+现在我们看到了把函数当做函数的输入的大用途！
 
 > map :: (a -> b) -> [a] -> [b]
 > map _ []     = []
 > map f (x:xs) = f x : map f xs
 
+<!--
 We can now use `mapIntList` to implement `addOneToAll`, `absAll`, and
 `squareAll`:
+-->
+
+我们现在可以用 `map` 来实现 `addOneToAll`、`absAll` 和 `squareAll`:
 
 > exampleList = [-1, 2, 6]
 
