@@ -393,28 +393,58 @@ We can now use `mapIntList` to implement `addOneToAll`, `absAll`, and
 <pre><code>map (+1) exampleList
 map abs  exampleList
 map (^2) exampleList</code></pre>
-<p><strong>Filter</strong></p>
-<p>Another common pattern is when we want to keep only some elements of a list, and throw others away, based on a test. For example, we might want to keep only the positive numbers:</p>
+<!--
+**Filter**
+-->
+<p><strong>过滤（Filter）</strong></p>
+<!--
+Another common pattern is when we want to keep only some elements of a
+list, and throw others away, based on a test. For example, we might want
+to keep only the positive numbers:
+-->
+<p>另一种常见的模式是我们只想根据某种测试保留列表中的部分元素，扔掉其他的。 比如我们只想保留所有的正数：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">keepOnlyPositive ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
 keepOnlyPositive [] <span class="fu">=</span> []
 keepOnlyPositive (x<span class="fu">:</span>xs) 
   <span class="fu">|</span> x <span class="fu">&gt;</span> <span class="dv">0</span>     <span class="fu">=</span> x <span class="fu">:</span> keepOnlyPositive xs
   <span class="fu">|</span> otherwise <span class="fu">=</span> keepOnlyPositive xs</code></pre></div>
-<p>Or only the even ones:</p>
+<!--
+Or only the even ones:
+-->
+<p>或者只保留所有的偶数：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">keepOnlyEven ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
 keepOnlyEven [] <span class="fu">=</span> []
 keepOnlyEven (x<span class="fu">:</span>xs)
   <span class="fu">|</span> even x    <span class="fu">=</span> x <span class="fu">:</span> keepOnlyEven xs
   <span class="fu">|</span> otherwise <span class="fu">=</span> keepOnlyEven xs</code></pre></div>
-<p>How can we generalize this pattern? What stays the same, and what do we need to abstract out?</p>
-<p>The thing to abstract out is the <em>test</em> (or <em>predicate</em>) used to determine which values to keep. A predicate is a function of type <code>a -&gt; Bool</code> which returns <code>True</code> for those elements which should be kept, and <code>False</code> for those which should be discarded. So we can write <code>filterIntList</code> as follows:</p>
+<!--
+How can we generalize this pattern? What stays the same, and what do we
+need to abstract out?
+-->
+<p>如何抽象这种模式？哪部分是不变的，需要抽象出来？</p>
+<!--
+The thing to abstract out is the *test* (or *predicate*) used to
+determine which values to keep. A predicate is a function of type
+`a -> Bool` which returns `True` for those elements which should be
+kept, and `False` for those which should be discarded. So we can write
+`filterIntList` as follows:
+-->
+<p>需要抽象出来的是用来决定哪些值该保留下来的 <em>测试</em> （或者说 <em>断言</em>）这部分。 断言是一个类型为 <code>a -&gt; Bool</code> 的函数，对应当保留的值返回 <code>True</code>，应当忽略的值返回 <code>False</code>。 所以我们可以改写 <code>filterIntList</code> 如下：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">filter<span class="ot"> ::</span> (a <span class="ot">-&gt;</span> <span class="dt">Bool</span>) <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a]
 filte _ [] <span class="fu">=</span> []
 filter p (x<span class="fu">:</span>xs)
   <span class="fu">|</span> p x       <span class="fu">=</span> x <span class="fu">:</span> filter p xs
   <span class="fu">|</span> otherwise <span class="fu">=</span> filter p xs</code></pre></div>
-<p><strong>Fold</strong></p>
-<p>We have one more recursion pattern on lists to talk about: folds. Here are a few functions on lists that follow a similar pattern: all of them somehow “combine” the elements of the list into a final answer.</p>
+<!--
+**Fold**
+-->
+<p><strong>折叠（Fold）</strong></p>
+<!--
+We have one more recursion pattern on lists to talk about: folds. Here
+are a few functions on lists that follow a similar pattern: all of them
+somehow “combine” the elements of the list into a final answer.
+-->
+<p>还有一个列表上的递归模式我们还没有说到：折叠。下面是几个模式相似的列表上的函数： 所有都试图 “结合” 所有列表中的元素来得到一个值。</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">sum&#39; ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>
 sum&#39; []     <span class="fu">=</span> <span class="dv">0</span>
 sum&#39; (x<span class="fu">:</span>xs) <span class="fu">=</span> x <span class="fu">+</span> sum&#39; xs
@@ -426,19 +456,41 @@ product&#39; (x<span class="fu">:</span>xs) <span class="fu">=</span> x <span cl
 <span class="ot">length&#39; ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span>
 length&#39; []     <span class="fu">=</span> <span class="dv">0</span>
 length&#39; (_<span class="fu">:</span>xs) <span class="fu">=</span> <span class="dv">1</span> <span class="fu">+</span> length&#39; xs</code></pre></div>
-<p>What do these three functions have in common, and what is different? As usual, the idea will be to abstract out the parts that vary, aided by the ability to define higher-order functions.</p>
+<!--
+What do these three functions have in common, and what is different? As
+usual, the idea will be to abstract out the parts that vary, aided by
+the ability to define higher-order functions.
+-->
+<p>这几个函数有什么共同点，又有什么不同？像刚才一样，我们想用高阶函数来把变化的部分抽象出来。</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">fold ::</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> b  <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> b
 fold f z []     <span class="fu">=</span> z
 fold f z (x<span class="fu">:</span>xs) <span class="fu">=</span> f x (fold f z xs)</code></pre></div>
-<p>Notice how <code>fold</code> essentially replaces <code>[]</code> with <code>z</code> and <code>(:)</code> with <code>f</code>, that is,</p>
+<!--
+Notice how `fold` essentially replaces `[]` with `z` and `(:)` with `f`,
+that is,
+-->
+<p>注意到 <code>fold</code> 中把 <code>z</code> 替换为 <code>[]</code>，把 <code>(:)</code> 替换为 <code>f</code>，即</p>
 <pre><code>fold f z [a,b,c] == a `f` (b `f` (c `f` z))</code></pre>
-<p>(If you think about <code>fold</code> from this perspective, you may be able to figure out how to generalize <code>fold</code> to data types other than lists…)</p>
-<p>Now let’s rewrite <code>sum'</code>, <code>product'</code>, and <code>length'</code> in terms of <code>fold</code>:</p>
+<!--
+(If you think about `fold` from this perspective, you may be able to
+figure out how to generalize `fold` to data types other than lists…)
+-->
+<p>从这个角度来看，你可能就知道如何推广 <code>fold</code> 到其他列表之外的数据结构上了。</p>
+<!--
+Now let’s rewrite `sum'`, `product'`, and `length'` in terms of `fold`:
+-->
+<p>下面，我们来用 <code>fold</code> 重写一下 <code>sum'</code>、<code>product'</code> 和 <code>length'</code>：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">sum&#39;&#39;     <span class="fu">=</span> fold (<span class="fu">+</span>) <span class="dv">0</span>
 product&#39;&#39; <span class="fu">=</span> fold (<span class="fu">*</span>) <span class="dv">1</span>
 length&#39;&#39;  <span class="fu">=</span> fold addOne <span class="dv">0</span>
  <span class="kw">where</span> addOne _ s <span class="fu">=</span> <span class="dv">1</span> <span class="fu">+</span> s</code></pre></div>
-<p>Of course, <code>fold</code> is already provided in the standard Prelude, under the name <a href="http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldr"><code>foldr</code></a>. Here are some Prelude functions which are defined in terms of <code>foldr</code>:</p>
+<!--
+Of course, `fold` is already provided in the standard Prelude, under the
+name
+[`foldr`](http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldr).
+Here are some Prelude functions which are defined in terms of `foldr`:
+-->
+<p>当然，<code>fold</code> 已经在 <code>Prelude</code> 中了，叫做 <a href="http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldr"><code>foldr</code></a>。 下面是一些 <code>Prelude</code> 中用 <code>foldr</code> 定义了的函数：</p>
 <ul>
 <li><code>length</code> <code>::          [a] -&gt; Int</code></li>
 <li><code>sum</code> <code>:: Num a =&gt; [a] -&gt; a</code></li>
@@ -448,101 +500,315 @@ length&#39;&#39;  <span class="fu">=</span> fold addOne <span class="dv">0</span
 <li><code>any</code> <code>:: (a -&gt; Bool) -&gt; [a] -&gt; Bool</code></li>
 <li><code>all</code> <code>:: (a -&gt; Bool) -&gt; [a] -&gt; Bool</code></li>
 </ul>
-<p>There is also <a href="http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldl"><code>foldl</code></a>, which folds “from the left”. That is,</p>
+<!--
+There is also
+[`foldl`](http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldl),
+which folds “from the left”. That is,
+-->
+<p>还有一个 <a href="http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldl"><code>foldl</code></a>, 表示 “从左向右” 折叠，即</p>
 <pre><code>foldr f z [a,b,c] == a `f` (b `f` (c `f` z))
 foldl f z [a,b,c] == ((z `f` a) `f` b) `f` c</code></pre>
-<p>In general, however, you should use <a href="http://haskell.org/ghc/docs/latest/html/libraries/base/Data-List.html#v:foldl"><code>foldl'</code> from <code>Data.List</code></a> instead, which does the same thing as <code>foldl</code> but is more efficient.</p>
-<h2 id="functional-programming">Functional Programming</h2>
-<p>We have seen now several cases of using a functional programming style. Here, we will look at several functions using a very functional style to help you get acclimated to this mode of programming.</p>
-<p><strong>Functional combinators</strong></p>
-<p>First, we need a few more combinators to get us going:</p>
+<!--
+In general, however, you should use [`foldl'` from
+`Data.List`](http://haskell.org/ghc/docs/latest/html/libraries/base/Data-List.html#v:foldl)
+instead, which does the same thing as `foldl` but is more efficient.
+-->
+<p>但一般情况下，你应该用 <a href="http://haskell.org/ghc/docs/latest/html/libraries/base/Data-List.html#v:foldl"><code>Data.List</code> 中的 <code>foldl'</code></a> 代替 <code>foldl</code>。它们做的事是一样的，但前者更高效。</p>
+<!--
+Functional Programming
+-->
+<h2 id="函数式编程">函数式编程</h2>
+<!--
+We have seen now several cases of using a functional programming style.
+Here, we will look at several functions using a very functional style to
+help you get acclimated to this mode of programming.
+-->
+<p>我们已经见过不少函数式编程的例子了。 为了让你更加适应这种编程的方式，我们现在来看看几个非常具有函数式风格的函数。</p>
+<!--
+**Functional combinators**
+-->
+<p><strong>函数式组合子</strong></p>
+<!--
+First, we need a few more combinators to get us going:
+-->
+<p>首先，我们还需要几个组合子：</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">(.) ::</span> (b <span class="ot">-&gt;</span> c) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> c
 (<span class="fu">.</span>) f g x <span class="fu">=</span> f (g x)</code></pre></div>
-<p>The <code>(.)</code> operator, part of the Haskell Prelude, is just function composition. Say we want to take every element of a list and add 1 and then multiply by 4. Here is a good way to do it:</p>
+<!--
+The `(.)` operator, part of the Haskell Prelude, is just function
+composition. Say we want to take every element of a list and add 1 and
+then multiply by 4. Here is a good way to do it:
+-->
+<p>Prelude 中的 <code>(.)</code> 操作符既是函数的组合。 比如我们想要把列表中的每个元素加一然后乘以四，可以这样做：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">add1Mul4 ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
 add1Mul4 x <span class="fu">=</span> map ((<span class="fu">*</span><span class="dv">4</span>) <span class="fu">.</span> (<span class="fu">+</span><span class="dv">1</span>)) x</code></pre></div>
-<p>While we’re at it, we should also show the <code>($)</code> operator, which has a trivial-looking definition:</p>
+<!--
+While we’re at it, we should also show the `($)` operator, which has a
+trivial-looking definition:
+-->
+<p>同时我们也来看看 <code>($)</code> 操作符，它的定义很简单：</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">($) ::</span> (a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b
 f <span class="fu">$</span> x <span class="fu">=</span> f x</code></pre></div>
-<p>Why have such a thing? Because <code>($)</code> is parsed as an operator, and this is useful for avoiding parentheses. For example, if we wish to negate the number of even numbers in a list, we could say</p>
+<!--
+Why have such a thing? Because `($)` is parsed as an operator, and this
+is useful for avoiding parentheses. For example, if we wish to negate
+the number of even numbers in a list, we could say
+-->
+<p>为什么需要这个函数？因为 <code>($)</code> 是一个操作符，可以避免许多括号的使用。 比如，如果我们想对列表中的偶数的个数取负，可以这样写</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">negateNumEvens1 ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>
 negateNumEvens1 x <span class="fu">=</span> negate (length (filter even x))</code></pre></div>
-<p>or</p>
+<!--
+or
+-->
+<p>或者这样</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">negateNumEvens2 ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>
 negateNumEvens2 x <span class="fu">=</span> negate <span class="fu">$</span> length <span class="fu">$</span> filter even x</code></pre></div>
-<p>No more parentheses!</p>
+<!--
+No more parentheses!
+-->
+<p>少了很多括号呢！</p>
 <p><strong>Lambda</strong></p>
-<p>It is sometimes necessary to create an anonymous function, or <em>lambda expression</em>. This is best explained by example. Say we want to duplicate every string in a list:</p>
+<!--
+It is sometimes necessary to create an anonymous function, or *lambda
+expression*. This is best explained by example. Say we want to duplicate
+every string in a list:
+-->
+<p>有时候我们需要创建匿名的函数，即 <em>lambda 表达式</em>。用例子来说明，比如我们重复列表中的所有字符串：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">duplicate1 ::</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
 duplicate1 <span class="fu">=</span> map dup
   <span class="kw">where</span> dup x <span class="fu">=</span> x <span class="fu">++</span> x</code></pre></div>
-<p>It’s a tiny bit silly to name <code>dup</code>. Instead, we can make an anonymous function:</p>
+<!--
+It’s a tiny bit silly to name `dup`. Instead, we can make an anonymous
+function:
+-->
+<p>单独给 <code>dup</code> 起个名字有点多余。其实，我们可以写成匿名函数：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">duplicate2 ::</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
 duplicate2 <span class="fu">=</span> map (\x <span class="ot">-&gt;</span> x <span class="fu">++</span> x)</code></pre></div>
-<p>The backslash binds the variables after it in the expression that follows the <code>-&gt;</code>. For anything but the shortest examples, it’s better to use a named helper function, though.</p>
-<h2 id="currying-and-partial-application">Currying and Partial Application</h2>
-<p>Remember how the types of multi-argument functions look weird, like they have “extra” arrows in them? For example, consider the function</p>
+<!--
+The backslash binds the variables after it in the expression that
+follows the `->`. For anything but the shortest examples, it’s better to
+use a named helper function, though.
+-->
+<p>反斜线后面的变量名被绑定在 <code>-&gt;</code> 后面的表达式里。不过，长一些的函数还是起个名字最好。</p>
+<!--
+Currying and Partial Application
+-->
+<h2 id="柯里化currying和部分应用">柯里化（currying）和部分应用</h2>
+<!--
+Remember how the types of multi-argument functions look weird, like they
+have “extra” arrows in them? For example, consider the function
+-->
+<p>还记得么，多参数函数的类型奇奇怪怪，中间有很多 “多余的” 箭头？比如这个函数</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">f ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>
 f x y <span class="fu">=</span> <span class="dv">2</span><span class="fu">*</span>x <span class="fu">+</span> y</code></pre></div>
-<p>I promise that there is a beautiful, deep reason for this, and now it’s finally time to reveal it: <em>all functions in Haskell take only one argument</em>. Say what?! But doesn’t the function <code>f</code> shown above take two arguments? No, actually, it doesn’t: it takes one argument (an <code>Int</code>) and <em>outputs a function</em> (of type <code>Int -&gt; Int</code>); that function takes one argument and returns the final answer. In fact, we can equivalently write <code>f</code>’s type like this:</p>
+<!--
+I promise that there is a beautiful, deep reason for this, and now it’s
+finally time to reveal it: *all functions in Haskell take only one
+argument*. Say what?! But doesn’t the function `f` shown above take two
+arguments? No, actually, it doesn’t: it takes one argument (an `Int`)
+and *outputs a function* (of type `Int -> Int`); that function takes one
+argument and returns the final answer. In fact, we can equivalently
+write `f`’s type like this:
+-->
+<p>我说过这其中是有优美而深刻的原因的，现在终于是时间揭晓了： <em>其实所有的 Haskell 中的函数只有一个参数</em>。 什么<!--鬼-->？！上面这个函数 <code>f</code> 不是就有两个参数吗？ 其实不是：它得到第一个参数（<code>Int</code>）然后返回了另一个函数（类型为 <code>Int -&gt; Int</code>）； 而这个函数得到另一个参数才返回最终的结果。 事实上我们可以把 <code>f</code> 的类型写成这样：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">f&#39; ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)
 f&#39; x y <span class="fu">=</span> <span class="dv">2</span><span class="fu">*</span>x <span class="fu">+</span> y</code></pre></div>
-<p>In particular, note that function arrows <em>associate to the right</em>, that is, <code>W -&gt; X -&gt; Y -&gt; Z</code> is equivalent to <code>W -&gt; (X -&gt; (Y -&gt; Z))</code>. We can always add or remove parentheses around the rightmost top-level arrow in a type.</p>
-<p>Function application, in turn, is <em>left</em>-associative. That is, <code>f 3 2</code> is really shorthand for <code>(f 3) 2</code>. This makes sense given what we said previously about <code>f</code> actually taking one argument and returning a function: we apply <code>f</code> to an argument <code>3</code>, which returns a function of type <code>Int -&gt; Int</code>, namely, a function which takes an <code>Int</code> and adds 6 to it. We then apply that function to the argument <code>2</code> by writing <code>(f 3) 2</code>, which gives us an <code>Int</code>. Since function application associates to the left, however, we can abbreviate <code>(f 3) 2</code> as <code>f 3 2</code>, giving us a nice notation for <code>f</code> as a “multi-argument” function.</p>
-<p>The “multi-argument” lambda abstraction</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">\x y z <span class="ot">-&gt;</span> <span class="fu">...</span> </code></pre></div>
-<p>is really just syntax sugar for</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">\x <span class="ot">-&gt;</span> (\y <span class="ot">-&gt;</span> (\z <span class="ot">-&gt;</span> <span class="fu">...</span>))<span class="fu">.</span>  </code></pre></div>
-<p>Likewise, the function definition</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">f x y z <span class="fu">=</span> <span class="fu">...</span> </code></pre></div>
-<p>is syntax sugar for</p>
+<!--
+In particular, note that function arrows *associate to the right*, that
+is, `W -> X -> Y -> Z` is equivalent to `W -> (X -> (Y -> Z))`. We can
+always add or remove parentheses around the rightmost top-level arrow in
+a type.
+-->
+<p>需要指出的是，类型中的箭头是 <em>向右结合</em> 的，<code>W -&gt; X -&gt; Y -&gt; Z</code> 等价于 <code>W -&gt; (X -&gt; (Y -&gt; Z))</code>。 类型中最右顶层的的括号既可以加上也可以去掉。</p>
+<!--
+Function application, in turn, is *left*-associative. That is, `f 3 2`
+is really shorthand for `(f 3) 2`. This makes sense given what we said
+previously about `f` actually taking one argument and returning a
+function: we apply `f` to an argument `3`, which returns a function of
+type `Int -> Int`, namely, a function which takes an `Int` and adds 6 to
+it. We then apply that function to the argument `2` by writing
+`(f 3) 2`, which gives us an `Int`. Since function application
+associates to the left, however, we can abbreviate `(f 3) 2` as `f 3 2`,
+giving us a nice notation for `f` as a “multi-argument” function.
+-->
+<p>反过来，函数应用是 <em>左</em> 结合的。<code>f 3 2</code> 其实是 <code>(f 3) 2</code> 的简写。 这么说我们之前说的 <code>f</code> 其实只需要一个参数然后返回另一个函数就合理了： 我们先把 <code>f</code> 应用在参数 <code>3</code> 上，返回一个类型为 <code>Int -&gt; Int</code> 的函数，即一个对整数加六的函数。 然后把这个函数应用在参数 <code>2</code> 上，写作 <code>(f 3) 2</code>，最后得到一个整数。 因为函数应用是左结合的，所以我们可以把 <code>(f 3) 2</code> 缩写为 <code>f 3 2</code>， 看起来 <code>f</code> 就像一个“多参数”的函数一样。</p>
+<!--
+The “multi-argument” lambda abstraction
+-->
+<p>“多参数”的 lambda</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">\x y z <span class="ot">-&gt;</span> <span class="fu">...</span></code></pre></div>
+<!--
+is really just syntax sugar for
+-->
+<p>其实只是</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">\x <span class="ot">-&gt;</span> (\y <span class="ot">-&gt;</span> (\z <span class="ot">-&gt;</span> <span class="fu">...</span>))</code></pre></div>
+<p>的语法糖。</p>
+<!--
+Likewise, the function definition
+-->
+<p>同样，下面的定义</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">f x y z <span class="fu">=</span> <span class="fu">...</span></code></pre></div>
+<!--
+is syntax sugar for
+-->
+<p>也是</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">f <span class="fu">=</span> \x <span class="ot">-&gt;</span> (\y <span class="ot">-&gt;</span> (\z <span class="ot">-&gt;</span> <span class="fu">...</span>))<span class="fu">.</span></code></pre></div>
-<p>This idea of representing multi-argument functions as one-argument functions returning functions is known as <em>currying</em>, named for the British mathematician and logician Haskell Curry. (His first name might sound familiar; yes, it’s the same guy.) Curry lived from 1900-1982 and spent much of his life at Penn State—but he also helped work on ENIAC at UPenn. The idea of representing multi-argument functions as one-argument functions returning functions was actually first discovered by Moses Schönfinkel, so we probably ought to call it <em>schönfinkeling</em>. Curry himself attributed the idea to Schönfinkel, but others had already started calling it “currying” and it was too late.</p>
-<p>If we want to actually represent a function of two arguments we can use a single argument which is a tuple. That is, the function</p>
+<p>的语法糖。</p>
+<!--
+This idea of representing multi-argument functions as one-argument
+functions returning functions is known as *currying*, named for the
+British mathematician and logician Haskell Curry. (His first name might
+sound familiar; yes, it’s the same guy.) Curry lived from 1900-1982 and
+spent much of his life at Penn State—but he also helped work on ENIAC at
+UPenn. The idea of representing multi-argument functions as one-argument
+functions returning functions was actually first discovered by Moses
+Schönfinkel, so we probably ought to call it *schönfinkeling*. Curry
+himself attributed the idea to Schönfinkel, but others had already
+started calling it “currying” and it was too late.
+-->
+<p>把多参数函数表示为单参数并返回函数的函数既是 <em>柯里化（currying）</em>，以英国数学和逻辑学家 Haskell Curry 命名。 （他的姓我们应该很熟悉，对，就是他。）柯里生于 1900 年，逝于 1982 年，在宾州度过了他的大部分时光。 把多参数函数表示为单参数并返回函数的函数的想法其实首先是 Moses Schönfinkel 提出的， 所以可能更应该叫做 <em>schönfinkeling</em>。 柯里自己也指出这个想法来源于 schönfinkel，但是太晚了，别人已经开始称其为 “currying” 了。</p>
+<!--
+If we want to actually represent a function of two arguments we can use
+a single argument which is a tuple. That is, the function
+-->
+<p>如果我们实在想表示一个有两个参数的函数，我们可以用一个元祖（tuple）来当参数。即</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">f&#39;&#39; ::</span> (<span class="dt">Int</span>,<span class="dt">Int</span>) <span class="ot">-&gt;</span> <span class="dt">Int</span>
 f&#39;&#39; (x,y) <span class="fu">=</span> <span class="dv">2</span><span class="fu">*</span>x <span class="fu">+</span> y</code></pre></div>
-<p>can also be thought of as taking “two arguments”, although in another sense it really only takes one argument which happens to be a pair. In order to convert between the two representations of a two-argument function, the standard library defines functions called <code>curry</code> and <code>uncurry</code>, defined like this (except with different names):</p>
+<!--
+can also be thought of as taking “two arguments”, although in another
+sense it really only takes one argument which happens to be a pair. In
+order to convert between the two representations of a two-argument
+function, the standard library defines functions called `curry` and
+`uncurry`, defined like this (except with different names):
+-->
+<p>这个函数可以看做有“两个”参数，尽管它只是有“一对”参数。 标准库里的 <code>curry</code> 和 <code>uncurry</code> 两个函数提供了这两种表达方式之间的转换：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">schö<span class="ot">nfinkel ::</span> ((a,b) <span class="ot">-&gt;</span> c) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> c
 schönfinkel f x y <span class="fu">=</span> f (x,y)
 
 unschö<span class="ot">nfinkel ::</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> c) <span class="ot">-&gt;</span> (a,b) <span class="ot">-&gt;</span> c
 unschönfinkel f (x,y) <span class="fu">=</span> f x y</code></pre></div>
-<p><code>uncurry</code> in particular can be useful when you have a pair and want to apply a function to it. For example:</p>
+<!--
+`uncurry` in particular can be useful when you have a pair and want to
+apply a function to it. For example:
+-->
+<p>当你有一对元祖，想把它应用在一个函数上时，<code>uncurry</code> 就特别有用了。比如：</p>
 <pre><code>Prelude&gt; uncurry (+) (2,3)
 5</code></pre>
-<p><strong>Partial application</strong></p>
-<p>The fact that functions in Haskell are curried makes <em>partial application</em> particularly easy. The idea of partial application is that we can take a function of multiple arguments and apply it to just <em>some</em> of its arguments, and get out a function of the remaining arguments. But as we’ve just seen, in Haskell there <em>are no</em> functions of multiple arguments! Every function can be “partially applied” to its first (and only) argument, resulting in a function of the remaining arguments.</p>
-<p>Note that Haskell doesn’t make it easy to partially apply to an argument other than the first. The one exception is infix operators, which as we’ve seen, can be partially applied to either of their two arguments using an operator section. In practice this is not that big of a restriction. There is an art to deciding the order of arguments to a function to make partial applications of it as useful as possible: the arguments should be ordered from “least to greatest variation”, that is, arguments which will often be the same should be listed first, and arguments which will often be different should come last.</p>
-<p><strong>Wholemeal programming</strong></p>
-<p>Let’s put some of the things we’ve just learned together in an example that also shows the power of a “wholemeal” style of programming. Consider the function <code>foobar</code>, defined as follows:</p>
+<!--
+**Partial application**
+-->
+<p><strong>部分应用</strong></p>
+<!--
+The fact that functions in Haskell are curried makes *partial
+application* particularly easy. The idea of partial application is that
+we can take a function of multiple arguments and apply it to just *some*
+of its arguments, and get out a function of the remaining arguments. But
+as we’ve just seen, in Haskell there *are no* functions of multiple
+arguments! Every function can be “partially applied” to its first (and
+only) argument, resulting in a function of the remaining arguments.
+-->
+<p>Haskell 的函数都已经柯里化了，这使得 <em>部分应用</em> 非常简单。 部分应用的意思是指，我们把一个多参数的函数只应用到<em>一部分</em>参数上，得到一个可以应用剩余参数的函数。 但是我们刚刚已经见过了，Haskell 中从来 <em>没有</em> 多参数的函数！ 每一个函数都可以（并只能）被“部分应用”在它的第一个参数上，得到一个一个可以应用剩余参数的函数。</p>
+<!--
+Note that Haskell doesn’t make it easy to partially apply to an argument
+other than the first. The one exception is infix operators, which as
+we’ve seen, can be partially applied to either of their two arguments
+using an operator section. In practice this is not that big of a
+restriction. There is an art to deciding the order of arguments to a
+function to make partial applications of it as useful as possible: the
+arguments should be ordered from “least to greatest variation”, that is,
+arguments which will often be the same should be listed first, and
+arguments which will often be different should come last.
+-->
+<p>注意在 Haskell 里部分应用除了第一个参数之外的参数就不容易了，除非使用中缀操作符。 我们已经见过，通过操作符域，中缀操作符可以被部分应用在它的两个参数任意一个上面。 所以在实际应用中这并不是什么限制了。 函数的参数的顺序是有讲究的，要使得部分应用越方便越好：参数的顺序应服从“最小变化到最可能变化”。 即，不大会变的参数放在前面，时常变化的参数放在后面。</p>
+<!--
+**Wholemeal programming**
+-->
+<p><strong>全麦编程</strong></p>
+<!--
+Let’s put some of the things we’ve just learned together in an example
+that also shows the power of a “wholemeal” style of programming.
+Consider the function `foobar`, defined as follows:
+-->
+<p>让我们来把刚学过的东西都放到一个例子里来，显示一下“全麦”风格的编程的威力。 比如如下定义的 <code>foobar</code> 函数：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">foobar ::</span> [<span class="dt">Integer</span>] <span class="ot">-&gt;</span> <span class="dt">Integer</span>
 foobar []     <span class="fu">=</span> <span class="dv">0</span>
 foobar (x<span class="fu">:</span>xs)
   <span class="fu">|</span> x <span class="fu">&gt;</span> <span class="dv">3</span>     <span class="fu">=</span> (<span class="dv">7</span><span class="fu">*</span>x <span class="fu">+</span> <span class="dv">2</span>) <span class="fu">+</span> foobar xs
   <span class="fu">|</span> otherwise <span class="fu">=</span> foobar xs</code></pre></div>
-<p>This seems straightforward enough, but it is not good Haskell style. The problem is that it is</p>
+<!--
+This seems straightforward enough, but it is not good Haskell style. The
+problem is that it is
+
+-   doing too much at once; and
+-   working at too low of a level.
+
+Instead of thinking about what we want to do with each element, we can
+instead think about making incremental transformations to the entire
+input, using the existing recursion patterns that we know of. Here’s a
+much more idiomatic implementation of `foobar`:
+-->
+<p>看起来足够直白，但是并不是最好的 Haskell 风格。问题出在：</p>
 <ul>
-<li>doing too much at once; and</li>
-<li>working at too low of a level.</li>
+<li>同时做了太多事；</li>
+<li>过于低层。</li>
 </ul>
-<p>Instead of thinking about what we want to do with each element, we can instead think about making incremental transformations to the entire input, using the existing recursion patterns that we know of. Here’s a much more idiomatic implementation of <code>foobar</code>:</p>
+<p>我们可以使用现有的几个递归模式，在整个输入上做增量变换，而不是考虑对每一个元素做什么。 下面是一个更为常用的 <code>foobar</code> 的实现：</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">foobar&#39; ::</span> [<span class="dt">Integer</span>] <span class="ot">-&gt;</span> <span class="dt">Integer</span>
 foobar&#39; <span class="fu">=</span> sum <span class="fu">.</span> map ((<span class="fu">+</span><span class="dv">2</span>) <span class="fu">.</span> (<span class="fu">*</span><span class="dv">7</span>)) <span class="fu">.</span> filter (<span class="fu">&gt;</span><span class="dv">3</span>)</code></pre></div>
-<p>This defines <code>foobar'</code> as a “pipeline” of three functions: first, we throw away all elements from the list which are not greater than three; next, we apply an arithmetic operation to every element of the remaining list; finally, we sum the results.</p>
-<p>Notice that in the above example, <code>map</code> and <code>filter</code> have been partially applied. For example, the type of <code>filter</code> is</p>
+<!--
+This defines `foobar'` as a “pipeline” of three functions: first, we
+throw away all elements from the list which are not greater than three;
+next, we apply an arithmetic operation to every element of the remaining
+list; finally, we sum the results.
+-->
+<p><code>foobar'</code> 被定义为三个函数串联的管道： 首先从列表中排除所有大于三的元素，然后对每个剩下的元素做算术操作，最后求和。</p>
+<!--
+Notice that in the above example, `map` and `filter` have been partially
+applied. For example, the type of `filter` is
+-->
+<p>注意在上面的例子中，<code>map</code> 和 <code>filter</code> 都是被部分应用的。例如，<code>filter</code> 的类型为：</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">(a <span class="ot">-&gt;</span> <span class="dt">Bool</span>) <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [a]</code></pre></div>
-<p>Applying it to <code>(&gt;3)</code> (which has type <code>Integer -&gt; Bool</code>) results in a function of type <code>[Integer] -&gt; [Integer]</code>, which is exactly the right sort of thing to compose with another function on <code>[Integer]</code>.</p>
-<p><strong>Point-free Style</strong></p>
-<p>The style of coding in which we define a function without reference to its arguments—in some sense saying what a function <em>is</em> rather than what it <em>does</em>—is known as “point-free” style. As we can see from the above example, it can be quite beautiful. Some people might even go so far as to say that you should always strive to use point-free style; but taken too far it can become extremely confusing. <code>lambdabot</code> in the <code>#haskell</code> IRC channel has a command <code>@pl</code> for turning functions into equivalent point-free expressions; here’s an example:</p>
+<!--
+Applying it to `(>3)` (which has type `Integer -> Bool`) results in a
+function of type `[Integer] -> [Integer]`, which is exactly the right
+sort of thing to compose with another function on `[Integer]`.
+-->
+<p>应用在 <code>(&gt;3)</code>(其类型为 <code>Integer -&gt; Bool</code>)上，返回一个类型为 <code>[Integer] -&gt; [Integer]</code> 的函数。 恰好能和另一个在 <code>[Integer]</code> 上的函数组合。</p>
+<!--
+**Point-free Style**
+-->
+<p><strong>Point-free 风格</strong></p>
+<!--
+The style of coding in which we define a function without reference to
+its arguments—in some sense saying what a function *is* rather than what
+it *does*—is known as “point-free” style. As we can see from the above
+example, it can be quite beautiful. Some people might even go so far as
+to say that you should always strive to use point-free style; but taken
+too far it can become extremely confusing. `lambdabot` in the `#haskell`
+IRC channel has a command `@pl` for turning functions into equivalent
+point-free expressions; here’s an example:
+-->
+<p>这种定义一个函数而不具名其参数 —— 与其在说定义函数 <em>是什么</em>，不如说在定义函数 <em>做什么</em> —— 常被称为 “point-free” 风格。 从上面的例子可以看出，这种风格有时非常优美。有些人可能会<!--渐行渐远了-->认为无论什么时候都应该使用 point-free 风格； 但是过于追求这种风格反而会造成巨大的困惑。 IRC 频道 <code>#haskell</code> 中的 <code>lambdabot</code> 有一个命令是 <code>@pl</code>，可以把函数转化为等价的 point-free 表达式；下面是一个例子：</p>
 <pre><code>@pl \f g x y -&gt; f (x ++ g x) (g y)
 join . ((flip . ((.) .)) .) . (. ap (++)) . (.)</code></pre>
-<p>This is clearly <em>not</em> an improvement!</p>
-<p>Consider the following two functions:</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">mumble  <span class="fu">=</span> (<span class="ot">`foldr`</span> []) <span class="fu">.</span> ((<span class="fu">:</span>)<span class="fu">.</span>) 
+<!--
+This is clearly *not* an improvement!
+-->
+<p>这可 <em>一点也没有</em> 提升！</p>
+<!--
+Consider the following two functions:
+-->
+<p>再看下面两个函数：</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">mumble  <span class="fu">=</span> (<span class="ot">`foldr`</span> []) <span class="fu">.</span> ((<span class="fu">:</span>)<span class="fu">.</span>)
 
 grumble <span class="fu">=</span> zipWith (<span class="fu">$</span>) <span class="fu">.</span> repeat</code></pre></div>
-<p>Can you figure out what these functions do? What if I told you that they are both equivalent to the <code>map</code> function. These are great examples of how point-free style can be taken too far. For this reason, some people refer to it as point-less style.</p>
+<!--
+Can you figure out what these functions do? What if I told you that they
+are both equivalent to the `map` function. These are great examples of
+how point-free style can be taken too far. For this reason, some people
+refer to it as point-less style.
+-->
+<p>你能明白他们在做什么吗？其实他们都等价于 <code>map</code> 函数。 这些都是 point-free 风格过犹不及的例子。所以有些人称之为 point-less（没有要点）风格。</p>
 <hr />
-<p><code>Generated 2015-03-16 09:56:02.113473</code></p>
   </body>
 </html>

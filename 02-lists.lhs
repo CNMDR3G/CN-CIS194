@@ -539,11 +539,19 @@ We can now use `mapIntList` to implement `addOneToAll`, `absAll`, and
     map abs  exampleList
     map (^2) exampleList
 
+<!--
 **Filter**
+-->
+**过滤（Filter）**
 
+<!--
 Another common pattern is when we want to keep only some elements of a
 list, and throw others away, based on a test. For example, we might want
 to keep only the positive numbers:
+-->
+
+另一种常见的模式是我们只想根据某种测试保留列表中的部分元素，扔掉其他的。
+比如我们只想保留所有的正数：
 
 > keepOnlyPositive :: [Int] -> [Int]
 > keepOnlyPositive [] = []
@@ -551,7 +559,10 @@ to keep only the positive numbers:
 >   | x > 0     = x : keepOnlyPositive xs
 >   | otherwise = keepOnlyPositive xs
 
+<!--
 Or only the even ones:
+-->
+或者只保留所有的偶数：
 
 > keepOnlyEven :: [Int] -> [Int]
 > keepOnlyEven [] = []
@@ -559,14 +570,22 @@ Or only the even ones:
 >   | even x    = x : keepOnlyEven xs
 >   | otherwise = keepOnlyEven xs
 
+<!--
 How can we generalize this pattern? What stays the same, and what do we
 need to abstract out?
+-->
+如何抽象这种模式？哪部分是不变的，需要抽象出来？
 
+<!--
 The thing to abstract out is the *test* (or *predicate*) used to
 determine which values to keep. A predicate is a function of type
 `a -> Bool` which returns `True` for those elements which should be
 kept, and `False` for those which should be discarded. So we can write
 `filterIntList` as follows:
+-->
+需要抽象出来的是用来决定哪些值该保留下来的 *测试* （或者说 *断言*）这部分。
+断言是一个类型为 `a -> Bool` 的函数，对应当保留的值返回 `True`，应当忽略的值返回 `False`。
+所以我们可以改写 `filterIntList` 如下：
 
 > filter :: (a -> Bool) -> [a] -> [a]
 > filte _ [] = []
@@ -574,11 +593,19 @@ kept, and `False` for those which should be discarded. So we can write
 >   | p x       = x : filter p xs
 >   | otherwise = filter p xs
 
+<!--
 **Fold**
+-->
+**折叠（Fold）**
 
+<!--
 We have one more recursion pattern on lists to talk about: folds. Here
 are a few functions on lists that follow a similar pattern: all of them
 somehow “combine” the elements of the list into a final answer.
+-->
+
+还有一个列表上的递归模式我们还没有说到：折叠。下面是几个模式相似的列表上的函数：
+所有都试图 “结合” 所有列表中的元素来得到一个值。
 
 > sum' :: [Int] -> Int
 > sum' []     = 0
@@ -592,33 +619,51 @@ somehow “combine” the elements of the list into a final answer.
 > length' []     = 0
 > length' (_:xs) = 1 + length' xs
 
+
+<!--
 What do these three functions have in common, and what is different? As
 usual, the idea will be to abstract out the parts that vary, aided by
 the ability to define higher-order functions.
+-->
+这几个函数有什么共同点，又有什么不同？像刚才一样，我们想用高阶函数来把变化的部分抽象出来。
 
 > fold :: (a -> b -> b) -> b  -> [a] -> b
 > fold f z []     = z
 > fold f z (x:xs) = f x (fold f z xs)
 
+<!--
 Notice how `fold` essentially replaces `[]` with `z` and `(:)` with `f`,
 that is,
+-->
+注意到 `fold` 中把 `z` 替换为 `[]`，把 `(:)` 替换为 `f`，即
 
     fold f z [a,b,c] == a `f` (b `f` (c `f` z))
 
+<!--
 (If you think about `fold` from this perspective, you may be able to
 figure out how to generalize `fold` to data types other than lists…)
+-->
+从这个角度来看，你可能就知道如何推广 `fold` 到其他列表之外的数据结构上了。
 
+<!--
 Now let’s rewrite `sum'`, `product'`, and `length'` in terms of `fold`:
+-->
+下面，我们来用 `fold` 重写一下 `sum'`、`product'` 和 `length'`：
 
 > sum''     = fold (+) 0
 > product'' = fold (*) 1
 > length''  = fold addOne 0
 >  where addOne _ s = 1 + s
 
+<!--
 Of course, `fold` is already provided in the standard Prelude, under the
 name
 [`foldr`](http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldr).
 Here are some Prelude functions which are defined in terms of `foldr`:
+-->
+当然，`fold` 已经在 `Prelude` 中了，叫做
+[`foldr`](http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldr)。
+下面是一些 `Prelude` 中用 `foldr` 定义了的函数：
 
 -   `length` `::          [a] -> Int`
 -   `sum` `:: Num a => [a] -> a`
@@ -628,91 +673,149 @@ Here are some Prelude functions which are defined in terms of `foldr`:
 -   `any` `:: (a -> Bool) -> [a] -> Bool`
 -   `all` `:: (a -> Bool) -> [a] -> Bool`
 
+<!--
 There is also
 [`foldl`](http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldl),
 which folds “from the left”. That is,
+-->
+还有一个
+[`foldl`](http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#v:foldl),
+表示 “从左向右” 折叠，即
+
 
     foldr f z [a,b,c] == a `f` (b `f` (c `f` z))
     foldl f z [a,b,c] == ((z `f` a) `f` b) `f` c
 
+<!--
 In general, however, you should use [`foldl'` from
 `Data.List`](http://haskell.org/ghc/docs/latest/html/libraries/base/Data-List.html#v:foldl)
 instead, which does the same thing as `foldl` but is more efficient.
+-->
+但一般情况下，你应该用
+[`Data.List` 中的 `foldl'`](http://haskell.org/ghc/docs/latest/html/libraries/base/Data-List.html#v:foldl)
+代替 `foldl`。它们做的事是一样的，但前者更高效。
 
+<!--
 Functional Programming
+-->
+函数式编程
 ----------------------
 
+<!--
 We have seen now several cases of using a functional programming style.
 Here, we will look at several functions using a very functional style to
 help you get acclimated to this mode of programming.
+-->
+我们已经见过不少函数式编程的例子了。
+为了让你更加适应这种编程的方式，我们现在来看看几个非常具有函数式风格的函数。
 
+<!--
 **Functional combinators**
+-->
+**函数式组合子**
 
+<!--
 First, we need a few more combinators to get us going:
+-->
+首先，我们还需要几个组合子：
 
 ``` {.haskell}
 (.) :: (b -> c) -> (a -> b) -> a -> c
 (.) f g x = f (g x)
 ```
 
+<!--
 The `(.)` operator, part of the Haskell Prelude, is just function
 composition. Say we want to take every element of a list and add 1 and
 then multiply by 4. Here is a good way to do it:
+-->
+Prelude 中的 `(.)` 操作符既是函数的组合。
+比如我们想要把列表中的每个元素加一然后乘以四，可以这样做：
 
 > add1Mul4 :: [Int] -> [Int]
 > add1Mul4 x = map ((*4) . (+1)) x
 
+<!--
 While we’re at it, we should also show the `($)` operator, which has a
 trivial-looking definition:
+-->
+同时我们也来看看 `($)` 操作符，它的定义很简单：
 
 ``` {.haskell}
 ($) :: (a -> b) -> a -> b
 f $ x = f x
 ```
 
+<!--
 Why have such a thing? Because `($)` is parsed as an operator, and this
 is useful for avoiding parentheses. For example, if we wish to negate
 the number of even numbers in a list, we could say
+-->
+为什么需要这个函数？因为 `($)` 是一个操作符，可以避免许多括号的使用。
+比如，如果我们想对列表中的偶数的个数取负，可以这样写
 
 > negateNumEvens1 :: [Int] -> Int
 > negateNumEvens1 x = negate (length (filter even x))
 
+<!--
 or
+-->
+或者这样
 
 > negateNumEvens2 :: [Int] -> Int
 > negateNumEvens2 x = negate $ length $ filter even x
 
+<!--
 No more parentheses!
+-->
+少了很多括号呢！
 
 **Lambda**
 
+<!--
 It is sometimes necessary to create an anonymous function, or *lambda
 expression*. This is best explained by example. Say we want to duplicate
 every string in a list:
+-->
+有时候我们需要创建匿名的函数，即 *lambda 表达式*。用例子来说明，比如我们重复列表中的所有字符串：
+
 
 > duplicate1 :: [String] -> [String]
 > duplicate1 = map dup
 >   where dup x = x ++ x
 
+<!--
 It’s a tiny bit silly to name `dup`. Instead, we can make an anonymous
 function:
+-->
+单独给 `dup` 起个名字有点多余。其实，我们可以写成匿名函数：
 
 > duplicate2 :: [String] -> [String]
 > duplicate2 = map (\x -> x ++ x)
 
+<!--
 The backslash binds the variables after it in the expression that
 follows the `->`. For anything but the shortest examples, it’s better to
 use a named helper function, though.
+-->
+反斜线后面的变量名被绑定在 `->` 后面的表达式里。不过，长一些的函数还是起个名字最好。
 
+<!--
 Currying and Partial Application
+-->
+柯里化（currying）和部分应用
 --------------------------------
 
+<!--
 Remember how the types of multi-argument functions look weird, like they
 have “extra” arrows in them? For example, consider the function
+-->
+还记得么，多参数函数的类型奇奇怪怪，中间有很多 “多余的” 箭头？比如这个函数
 
 > f :: Int -> Int -> Int
 > f x y = 2*x + y
 
+<!--
 I promise that there is a beautiful, deep reason for this, and now it’s
 finally time to reveal it: *all functions in Haskell take only one
 argument*. Say what?! But doesn’t the function `f` shown above take two
@@ -720,15 +823,27 @@ arguments? No, actually, it doesn’t: it takes one argument (an `Int`)
 and *outputs a function* (of type `Int -> Int`); that function takes one
 argument and returns the final answer. In fact, we can equivalently
 write `f`’s type like this:
+-->
+我说过这其中是有优美而深刻的原因的，现在终于是时间揭晓了：
+*其实所有的 Haskell 中的函数只有一个参数*。
+什么<!--鬼-->？！上面这个函数 `f` 不是就有两个参数吗？
+其实不是：它得到第一个参数（`Int`）然后返回了另一个函数（类型为 `Int -> Int`）；
+而这个函数得到另一个参数才返回最终的结果。
+事实上我们可以把 `f` 的类型写成这样：
 
 > f' :: Int -> (Int -> Int)
 > f' x y = 2*x + y
 
+<!--
 In particular, note that function arrows *associate to the right*, that
 is, `W -> X -> Y -> Z` is equivalent to `W -> (X -> (Y -> Z))`. We can
 always add or remove parentheses around the rightmost top-level arrow in
 a type.
+-->
+需要指出的是，类型中的箭头是 *向右结合* 的，`W -> X -> Y -> Z` 等价于 `W -> (X -> (Y -> Z))`。
+类型中最右顶层的的括号既可以加上也可以去掉。
 
+<!--
 Function application, in turn, is *left*-associative. That is, `f 3 2`
 is really shorthand for `(f 3) 2`. This makes sense given what we said
 previously about `f` actually taking one argument and returning a
@@ -738,31 +853,55 @@ it. We then apply that function to the argument `2` by writing
 `(f 3) 2`, which gives us an `Int`. Since function application
 associates to the left, however, we can abbreviate `(f 3) 2` as `f 3 2`,
 giving us a nice notation for `f` as a “multi-argument” function.
+-->
+反过来，函数应用是 *左* 结合的。`f 3 2` 其实是 `(f 3) 2` 的简写。
+这么说我们之前说的 `f` 其实只需要一个参数然后返回另一个函数就合理了：
+我们先把 `f` 应用在参数 `3` 上，返回一个类型为 `Int -> Int` 的函数，即一个对整数加六的函数。
+然后把这个函数应用在参数 `2` 上，写作 `(f 3) 2`，最后得到一个整数。
+因为函数应用是左结合的，所以我们可以把 `(f 3) 2` 缩写为 `f 3 2`，
+看起来 `f` 就像一个“多参数”的函数一样。
 
+<!--
 The “multi-argument” lambda abstraction
+-->
+“多参数”的 lambda
 
 ``` {.haskell}
-\x y z -> ... 
+\x y z -> ...
 ```
 
+<!--
 is really just syntax sugar for
+-->
+其实只是
 
 ``` {.haskell}
-\x -> (\y -> (\z -> ...)).  
+\x -> (\y -> (\z -> ...))
 ```
 
+的语法糖。
+
+<!--
 Likewise, the function definition
+-->
+同样，下面的定义
 
 ``` {.haskell}
-f x y z = ... 
+f x y z = ...
 ```
 
+<!--
 is syntax sugar for
+-->
+也是
 
 ``` {.haskell}
 f = \x -> (\y -> (\z -> ...)).
 ```
 
+的语法糖。
+
+<!--
 This idea of representing multi-argument functions as one-argument
 functions returning functions is known as *currying*, named for the
 British mathematician and logician Haskell Curry. (His first name might
@@ -773,18 +912,31 @@ functions returning functions was actually first discovered by Moses
 Schönfinkel, so we probably ought to call it *schönfinkeling*. Curry
 himself attributed the idea to Schönfinkel, but others had already
 started calling it “currying” and it was too late.
+-->
+把多参数函数表示为单参数并返回函数的函数既是 *柯里化（currying）*，以英国数学和逻辑学家 Haskell Curry 命名。
+（他的姓我们应该很熟悉，对，就是他。）柯里生于 1900 年，逝于 1982 年，在宾州度过了他的大部分时光。
+把多参数函数表示为单参数并返回函数的函数的想法其实首先是 Moses Schönfinkel 提出的，
+所以可能更应该叫做 *schönfinkeling*。
+柯里自己也指出这个想法来源于 schönfinkel，但是太晚了，别人已经开始称其为 “currying” 了。
 
+<!--
 If we want to actually represent a function of two arguments we can use
 a single argument which is a tuple. That is, the function
+-->
+如果我们实在想表示一个有两个参数的函数，我们可以用一个元祖（tuple）来当参数。即
 
 > f'' :: (Int,Int) -> Int
 > f'' (x,y) = 2*x + y
 
+<!--
 can also be thought of as taking “two arguments”, although in another
 sense it really only takes one argument which happens to be a pair. In
 order to convert between the two representations of a two-argument
 function, the standard library defines functions called `curry` and
 `uncurry`, defined like this (except with different names):
+-->
+这个函数可以看做有“两个”参数，尽管它只是有“一对”参数。
+标准库里的 `curry` 和 `uncurry` 两个函数提供了这两种表达方式之间的转换：
 
 > schönfinkel :: ((a,b) -> c) -> a -> b -> c
 > schönfinkel f x y = f (x,y)
@@ -792,14 +944,21 @@ function, the standard library defines functions called `curry` and
 > unschönfinkel :: (a -> b -> c) -> (a,b) -> c
 > unschönfinkel f (x,y) = f x y
 
+<!--
 `uncurry` in particular can be useful when you have a pair and want to
 apply a function to it. For example:
+-->
+当你有一对元祖，想把它应用在一个函数上时，`uncurry` 就特别有用了。比如：
 
     Prelude> uncurry (+) (2,3)
     5
 
+<!--
 **Partial application**
+-->
+**部分应用**
 
+<!--
 The fact that functions in Haskell are curried makes *partial
 application* particularly easy. The idea of partial application is that
 we can take a function of multiple arguments and apply it to just *some*
@@ -807,7 +966,13 @@ of its arguments, and get out a function of the remaining arguments. But
 as we’ve just seen, in Haskell there *are no* functions of multiple
 arguments! Every function can be “partially applied” to its first (and
 only) argument, resulting in a function of the remaining arguments.
+-->
+Haskell 的函数都已经柯里化了，这使得 *部分应用* 非常简单。
+部分应用的意思是指，我们把一个多参数的函数只应用到*一部分*参数上，得到一个可以应用剩余参数的函数。
+但是我们刚刚已经见过了，Haskell 中从来 *没有* 多参数的函数！
+每一个函数都可以（并只能）被“部分应用”在它的第一个参数上，得到一个一个可以应用剩余参数的函数。
 
+<!--
 Note that Haskell doesn’t make it easy to partially apply to an argument
 other than the first. The one exception is infix operators, which as
 we’ve seen, can be partially applied to either of their two arguments
@@ -817,12 +982,25 @@ function to make partial applications of it as useful as possible: the
 arguments should be ordered from “least to greatest variation”, that is,
 arguments which will often be the same should be listed first, and
 arguments which will often be different should come last.
+-->
+注意在 Haskell 里部分应用除了第一个参数之外的参数就不容易了，除非使用中缀操作符。
+我们已经见过，通过操作符域，中缀操作符可以被部分应用在它的两个参数任意一个上面。
+所以在实际应用中这并不是什么限制了。
+函数的参数的顺序是有讲究的，要使得部分应用越方便越好：参数的顺序应服从“最小变化到最可能变化”。
+即，不大会变的参数放在前面，时常变化的参数放在后面。
 
+<!--
 **Wholemeal programming**
+-->
+**全麦编程**
 
+<!--
 Let’s put some of the things we’ve just learned together in an example
 that also shows the power of a “wholemeal” style of programming.
 Consider the function `foobar`, defined as follows:
+-->
+让我们来把刚学过的东西都放到一个例子里来，显示一下“全麦”风格的编程的威力。
+比如如下定义的 `foobar` 函数：
 
 > foobar :: [Integer] -> Integer
 > foobar []     = 0
@@ -830,6 +1008,7 @@ Consider the function `foobar`, defined as follows:
 >   | x > 3     = (7*x + 2) + foobar xs
 >   | otherwise = foobar xs
 
+<!--
 This seems straightforward enough, but it is not good Haskell style. The
 problem is that it is
 
@@ -840,28 +1019,52 @@ Instead of thinking about what we want to do with each element, we can
 instead think about making incremental transformations to the entire
 input, using the existing recursion patterns that we know of. Here’s a
 much more idiomatic implementation of `foobar`:
+-->
+
+看起来足够直白，但是并不是最好的 Haskell 风格。问题出在：
+
+-   同时做了太多事；
+-   过于低层。
+
+我们可以使用现有的几个递归模式，在整个输入上做增量变换，而不是考虑对每一个元素做什么。
+下面是一个更为常用的 `foobar` 的实现：
 
 > foobar' :: [Integer] -> Integer
 > foobar' = sum . map ((+2) . (*7)) . filter (>3)
 
+<!--
 This defines `foobar'` as a “pipeline” of three functions: first, we
 throw away all elements from the list which are not greater than three;
 next, we apply an arithmetic operation to every element of the remaining
 list; finally, we sum the results.
+-->
+`foobar'` 被定义为三个函数串联的管道：
+首先从列表中排除所有大于三的元素，然后对每个剩下的元素做算术操作，最后求和。
 
+<!--
 Notice that in the above example, `map` and `filter` have been partially
 applied. For example, the type of `filter` is
+-->
+注意在上面的例子中，`map` 和 `filter` 都是被部分应用的。例如，`filter` 的类型为：
 
 ``` {.haskell}
 (a -> Bool) -> [a] -> [a]
 ```
 
+<!--
 Applying it to `(>3)` (which has type `Integer -> Bool`) results in a
 function of type `[Integer] -> [Integer]`, which is exactly the right
 sort of thing to compose with another function on `[Integer]`.
+-->
+应用在 `(>3)`(其类型为 `Integer -> Bool`)上，返回一个类型为 `[Integer] -> [Integer]` 的函数。
+恰好能和另一个在 `[Integer]` 上的函数组合。
 
+<!--
 **Point-free Style**
+-->
+**Point-free 风格**
 
+<!--
 The style of coding in which we define a function without reference to
 its arguments—in some sense saying what a function *is* rather than what
 it *does*—is known as “point-free” style. As we can see from the above
@@ -870,23 +1073,37 @@ to say that you should always strive to use point-free style; but taken
 too far it can become extremely confusing. `lambdabot` in the `#haskell`
 IRC channel has a command `@pl` for turning functions into equivalent
 point-free expressions; here’s an example:
+-->
+这种定义一个函数而不具名其参数 —— 与其在说定义函数 *是什么*，不如说在定义函数 *做什么* —— 常被称为 “point-free” 风格。
+从上面的例子可以看出，这种风格有时非常优美。有些人可能会<!--渐行渐远了-->认为无论什么时候都应该使用 point-free 风格；
+但是过于追求这种风格反而会造成巨大的困惑。
+IRC 频道 `#haskell` 中的 `lambdabot` 有一个命令是 `@pl`，可以把函数转化为等价的 point-free 表达式；下面是一个例子：
+
 
     @pl \f g x y -> f (x ++ g x) (g y)
     join . ((flip . ((.) .)) .) . (. ap (++)) . (.)
 
+<!--
 This is clearly *not* an improvement!
+-->
+这可 *一点也没有* 提升！
 
+<!--
 Consider the following two functions:
+-->
+再看下面两个函数：
 
-> mumble  = (`foldr` []) . ((:).) 
+> mumble  = (`foldr` []) . ((:).)
 >
 > grumble = zipWith ($) . repeat
 
+<!--
 Can you figure out what these functions do? What if I told you that they
 are both equivalent to the `map` function. These are great examples of
 how point-free style can be taken too far. For this reason, some people
 refer to it as point-less style.
+-->
+你能明白他们在做什么吗？其实他们都等价于 `map` 函数。
+这些都是 point-free 风格过犹不及的例子。所以有些人称之为 point-less（没有要点）风格。
 
 ------------------------------------------------------------------------
-
-`Generated 2015-03-16 09:56:02.113473`
